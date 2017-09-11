@@ -1,0 +1,74 @@
+package main
+
+import "fmt"
+
+type Entry struct {
+	MyType int
+	Single Single
+}
+
+type Single interface {
+	Run()
+}
+
+type Cron struct {
+	Next string
+	Job  Job
+}
+
+func (c *Cron) Run() {
+	c.Job.Run()
+}
+
+type OneOff struct {
+	Next string
+	Job  Job
+}
+
+func (o *OneOff) Run() {
+	o.Job.Run()
+}
+
+type Job interface {
+	Run()
+}
+
+type FuncJob func()
+
+func (f FuncJob) Run() { f() }
+
+func main() {
+	cmd1 := func() { fmt.Println("Every hour on the one hour") }
+	funcjob1 := FuncJob(cmd1)
+
+	cmd2 := func() { fmt.Println("Every hour on the two hour") }
+	funcjob2 := FuncJob(cmd2)
+
+	cron1 := &Cron{
+		Next: "cron",
+		Job:  funcjob1,
+	}
+
+	entry1 := &Entry{
+		MyType: 1,
+		Single: cron1,
+	}
+
+	oneoff1 := &OneOff{
+		Next: "oneoff",
+		Job:  funcjob2,
+	}
+
+	entry2 := &Entry{
+		MyType: 2,
+		Single: oneoff1,
+	}
+
+	fmt.Printf("%+v\n", entry1)
+	fmt.Printf("%+v\n", entry2)
+
+	entry1.Single.Run()
+
+	entry2.Single.Run()
+
+}
